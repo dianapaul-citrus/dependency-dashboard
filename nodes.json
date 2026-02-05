@@ -1,0 +1,82 @@
+[
+  {
+    "id": "INSDEV-2498",
+    "summary": "Data requirements for retailer reports",
+    "status": "Open",
+    "status_category": "new",
+    "project": "INSDEV",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/INSDEV-2498"
+  },
+  {
+    "id": "AR-1131",
+    "summary": "UNL 132 - Team perf report - BE ",
+    "status": "In Progress",
+    "status_category": "indeterminate",
+    "project": "AR",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/AR-1131"
+  },
+  {
+    "id": "INSDEV-2535",
+    "summary": "Team Name to be captured in viz tables ",
+    "status": "Done",
+    "status_category": "done",
+    "project": "INSDEV",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/INSDEV-2535"
+  },
+  {
+    "id": "AR-1127",
+    "summary": "Retailer campaign performance - Backend changes",
+    "status": "In Review",
+    "status_category": "indeterminate",
+    "project": "AR",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/AR-1127"
+  },
+  {
+    "id": "AR-1126",
+    "summary": "Retailer campaign performance - Frontend changes w/o period comparison",
+    "status": "In Review",
+    "status_category": "indeterminate",
+    "project": "AR",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/AR-1126"
+  },
+  {
+    "id": "INSDEV-2393",
+    "summary": "Implementation: Live Data for Wallet Report",
+    "status": "Done",
+    "status_category": "done",
+    "project": "INSDEV",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/INSDEV-2393"
+  },
+  {
+    "id": "AR-1121",
+    "summary": "Intra day wallet details - Verification and other changes",
+    "status": "Done",
+    "status_category": "done",
+    "project": "AR",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/AR-1121"
+  },
+  {
+    "id": "AR-1058",
+    "summary": "Fetch 'Maximum Bid' and 'Spend Limit' from live datasets",
+    "status": "In Review",
+    "status_category": "indeterminate",
+    "project": "AR",
+    "type": "",
+    "assignee": "",
+    "url": "https://citrusad.atlassian.net/browse/AR-1058"
+  }
+]

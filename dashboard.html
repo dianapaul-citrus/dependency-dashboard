@@ -1110,28 +1110,26 @@
             // Normalize data - ensure AR is always on the left, INSDEV on the right
             const tableData = dependencies.map(d => {
                 let arKey, arSummary, arStatus, insdevKey, insdevSummary, insdevStatus, linkType, isBlocking;
-                let insdevCreated, insdevUpdated, insdevStatusChanged;
+                let arCreated, arStatusChanged;
                 
                 if (d.source_project === 'AR') {
                     arKey = d.source;
                     arSummary = d.source_summary;
                     arStatus = d.source_status;
+                    arCreated = d.source_created || '';
+                    arStatusChanged = d.source_status_changed || '';
                     insdevKey = d.target;
                     insdevSummary = d.target_summary;
                     insdevStatus = d.target_status;
-                    // For AR->INSDEV, we don't have INSDEV dates directly
-                    insdevCreated = d.target_created || '';
-                    insdevStatusChanged = d.target_status_changed || '';
                 } else {
                     arKey = d.target;
                     arSummary = d.target_summary;
                     arStatus = d.target_status;
+                    arCreated = d.target_created || '';
+                    arStatusChanged = d.target_status_changed || '';
                     insdevKey = d.source;
                     insdevSummary = d.source_summary;
                     insdevStatus = d.source_status;
-                    // For INSDEV->AR, INSDEV is the source
-                    insdevCreated = d.source_created || '';
-                    insdevStatusChanged = d.source_status_changed || '';
                 }
                 
                 linkType = d.link_type;
@@ -1143,13 +1141,13 @@
                 const isResolved = d.link_type.toLowerCase().includes('block') && 
                                   (d.source_status === 'Done' || d.target_status === 'Done');
                 
-                // Calculate days blocked
+                // Calculate days blocked (using AR ticket created date as blocked since)
                 let blockedSince = null;
                 let daysBlocked = 0;
                 
                 if (isBlocking) {
-                    // Use status change date if available, otherwise use created date
-                    const dateStr = insdevStatusChanged || insdevCreated;
+                    // Use AR ticket created date - this represents how long AR has been waiting
+                    const dateStr = arCreated;
                     if (dateStr) {
                         blockedSince = new Date(dateStr);
                         const now = new Date();

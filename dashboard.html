@@ -1110,13 +1110,14 @@
             // Normalize data - ensure AR is always on the left, INSDEV on the right
             const tableData = dependencies.map(d => {
                 let arKey, arSummary, arStatus, insdevKey, insdevSummary, insdevStatus, linkType, isBlocking;
-                let arCreated, arStatusChanged;
+                let arCreated, arUpdated, arStatusChanged;
                 
                 if (d.source_project === 'AR') {
                     arKey = d.source;
                     arSummary = d.source_summary;
                     arStatus = d.source_status;
                     arCreated = d.source_created || '';
+                    arUpdated = d.source_updated || '';
                     arStatusChanged = d.source_status_changed || '';
                     insdevKey = d.target;
                     insdevSummary = d.target_summary;
@@ -1126,6 +1127,7 @@
                     arSummary = d.target_summary;
                     arStatus = d.target_status;
                     arCreated = d.target_created || '';
+                    arUpdated = d.target_updated || '';
                     arStatusChanged = d.target_status_changed || '';
                     insdevKey = d.source;
                     insdevSummary = d.source_summary;
@@ -1141,13 +1143,13 @@
                 const isResolved = d.link_type.toLowerCase().includes('block') && 
                                   (d.source_status === 'Done' || d.target_status === 'Done');
                 
-                // Calculate days blocked (using AR ticket created date as blocked since)
+                // Calculate days blocked (using AR ticket updated date - when link was likely added)
                 let blockedSince = null;
                 let daysBlocked = 0;
                 
                 if (isBlocking) {
-                    // Use AR ticket created date - this represents how long AR has been waiting
-                    const dateStr = arCreated;
+                    // Use AR ticket updated date - approximates when the blocking link was added
+                    const dateStr = arUpdated || arCreated;
                     if (dateStr) {
                         blockedSince = new Date(dateStr);
                         const now = new Date();

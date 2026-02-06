@@ -773,6 +773,35 @@
             color: var(--text-muted);
         }
 
+        /* Days blocked styles */
+        .days-blocked {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .days-blocked.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        .days-blocked.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+        }
+
+        .days-blocked.normal {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent-ar);
+        }
+
+        .days-blocked.resolved {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--text-muted);
+        }
+
         /* Notes column styles */
         .notes-cell {
             min-width: 200px;
@@ -913,6 +942,7 @@
                                 <th>INSDEV Summary</th>
                                 <th class="sortable" data-sort="insdev-status">INSDEV Status</th>
                                 <th>Blocked?</th>
+                                <th class="sortable" data-sort="days-blocked">Days Blocked</th>
                                 <th>Notes / Tracking</th>
                             </tr>
                         </thead>
@@ -1080,6 +1110,7 @@
             // Normalize data - ensure AR is always on the left, INSDEV on the right
             const tableData = dependencies.map(d => {
                 let arKey, arSummary, arStatus, insdevKey, insdevSummary, insdevStatus, linkType, isBlocking;
+                let insdevCreated, insdevUpdated, insdevStatusChanged;
                 
                 if (d.source_project === 'AR') {
                     arKey = d.source;
@@ -1088,6 +1119,9 @@
                     insdevKey = d.target;
                     insdevSummary = d.target_summary;
                     insdevStatus = d.target_status;
+                    // For AR->INSDEV, we don't have INSDEV dates directly
+                    insdevCreated = d.target_created || '';
+                    insdevStatusChanged = d.target_status_changed || '';
                 } else {
                     arKey = d.target;
                     arSummary = d.target_summary;
@@ -1095,6 +1129,9 @@
                     insdevKey = d.source;
                     insdevSummary = d.source_summary;
                     insdevStatus = d.source_status;
+                    // For INSDEV->AR, INSDEV is the source
+                    insdevCreated = d.source_created || '';
+                    insdevStatusChanged = d.source_status_changed || '';
                 }
                 
                 linkType = d.link_type;
@@ -1106,6 +1143,20 @@
                 const isResolved = d.link_type.toLowerCase().includes('block') && 
                                   (d.source_status === 'Done' || d.target_status === 'Done');
                 
+                // Calculate days blocked
+                let blockedSince = null;
+                let daysBlocked = 0;
+                
+                if (isBlocking) {
+                    // Use status change date if available, otherwise use created date
+                    const dateStr = insdevStatusChanged || insdevCreated;
+                    if (dateStr) {
+                        blockedSince = new Date(dateStr);
+                        const now = new Date();
+                        daysBlocked = Math.floor((now - blockedSince) / (1000 * 60 * 60 * 24));
+                    }
+                }
+                
                 // Priority score: Blocks > Gantt > Relates
                 let priority = 0;
                 if (linkType.toLowerCase().includes('block')) priority = 3;
@@ -1116,6 +1167,7 @@
                     arKey, arSummary, arStatus,
                     insdevKey, insdevSummary, insdevStatus,
                     linkType, isBlocking, isResolved, priority,
+                    blockedSince, daysBlocked,
                     raw: d
                 };
             });
@@ -1134,8 +1186,15 @@
             
             const uniqueData = Array.from(pairMap.values());
             
-            // Sort by AR key
-            uniqueData.sort((a, b) => a.arKey.localeCompare(b.arKey));
+            // Sort by days blocked (descending), then by AR key
+            uniqueData.sort((a, b) => {
+                if (a.isBlocking && b.isBlocking) {
+                    return b.daysBlocked - a.daysBlocked; // Most blocked first
+                }
+                if (a.isBlocking) return -1;
+                if (b.isBlocking) return 1;
+                return a.arKey.localeCompare(b.arKey);
+            });
             
             // Store for filtering
             window.tableData = uniqueData;
@@ -1165,6 +1224,16 @@
                     blockedHtml = '<span class="blocked-indicator" style="color: var(--text-muted);">N/A</span>';
                 }
                 
+                // Calculate days blocked
+                let daysBlockedHtml = '-';
+                if (row.isBlocking && row.blockedSince) {
+                    const days = row.daysBlocked || 0;
+                    const colorClass = days > 14 ? 'critical' : days > 7 ? 'warning' : 'normal';
+                    daysBlockedHtml = `<span class="days-blocked ${colorClass}">${days} days</span>`;
+                } else if (row.isResolved) {
+                    daysBlockedHtml = '<span class="days-blocked resolved">Resolved</span>';
+                }
+                
                 const noteKey = `${row.arKey}-${row.insdevKey}`;
                 const savedNote = getSavedNote(noteKey);
                 
@@ -1181,6 +1250,7 @@
                         <td class="summary-cell">${row.insdevSummary}</td>
                         <td><span class="status-badge ${insdevStatusClass}">${row.insdevStatus}</span></td>
                         <td>${blockedHtml}</td>
+                        <td>${daysBlockedHtml}</td>
                         <td class="notes-cell">
                             <div class="notes-container">
                                 <textarea class="notes-input" 
